@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Object Detection Demo</title>
+</head>
+<body>
+    <h1>Object Detection Demo</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*" required>
+        <button type="submit">Upload Image</button>
+    </form>
+
+    <div id="result">
+        <h2>Processed Image:</h2>
+        <img id="processed-image" alt="Processed Image">
+        <h2>Detections:</h2>
+        <ul id="detections"></ul>
+    </div>
+
+    <script>
+        document.getElementById("upload-form").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch("/", {
+                method: "POST",
+                body: formData,
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    const processedImage = document.getElementById("processed-image");
+                    const detectionsList = document.getElementById("detections");
+
+                    // Display the processed image
+                    processedImage.src = "data:image/png;base64," + data.processed_image;
+
+                    // Display detected objects and their classes
+                    detectionsList.innerHTML = "";
+                    data.detected_objects.forEach((obj) => {
+                        const listItem = document.createElement("li");
+                        listItem.textContent = `Class: ${obj.class}, Bbox: ${obj.bbox}`;
+                        detectionsList.appendChild(listItem);
+                    });
+                })
+                .catch((error) => console.error("Error:", error));
+        });
+    </script>
+</body>
+</html>
+
